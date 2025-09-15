@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:9.0'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     environment {
         DB_HOST = 'localhost'
@@ -13,6 +8,16 @@ pipeline {
     }
 
     stages {
+        stage('Configurar .NET 9') {
+            steps {
+                sh '''
+                    curl -o install-dotnet.sh https://dot.net/v1/dotnet-install.sh
+                    chmod +x install-dotnet.sh
+                    ./install-dotnet.sh --version 9.0.x
+                '''
+            }
+        }
+
         stage('Crear Tool Manifest') {
             steps {
                 sh 'dotnet new tool-manifest --force'

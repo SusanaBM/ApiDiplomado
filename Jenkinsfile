@@ -16,6 +16,21 @@ pipeline {
         stage('Clonar Código') {
             steps {
                 checkout scm
+                echo '✅ Código clonado exitosamente.'
+            }
+        }
+
+        stage('Crear Tool Manifest') {
+            steps {
+                sh 'dotnet new tool-manifest --force'
+                echo '✅ Tool manifest creado exitosamente.'
+            }
+        }
+
+        stage('Instalar EF Core Tools') {
+            steps {
+                sh 'dotnet tool install dotnet-ef'
+                echo '✅ EF Core Tools instalados exitosamente.'
             }
         }
 
@@ -23,6 +38,7 @@ pipeline {
             steps {
                 sh 'dotnet restore'
                 sh 'dotnet tool restore'
+                echo '✅ Dependencias restauradas exitosamente.'
             }
         }
 
@@ -33,18 +49,21 @@ pipeline {
                         sh 'dotnet ef database update --connection "$CONNECTION_STRING"'
                     }
                 }
+                echo '✅ Base de datos actualizada exitosamente.'
             }
         }
 
         stage('Compilar') {
             steps {
                 sh 'dotnet build --configuration Release --no-restore'
+                echo '✅ Compilación exitosa.'
             }
         }
 
         stage('Ejecutar Pruebas') {
             steps {
                 sh 'dotnet test --configuration Release --no-build --verbosity normal'
+                echo '✅ Pruebas ejecutadas exitosamente.'
             }
         }
 
@@ -52,6 +71,7 @@ pipeline {
             steps {
                 sh 'dotnet publish -c Release -o out'
                 archiveArtifacts artifacts: 'out/**/*', fingerprint: true
+                echo '✅ Artefactos publicados exitosamente.'
             }
         }
     }

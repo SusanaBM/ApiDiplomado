@@ -54,14 +54,26 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
                     withEnv(["CONNECTION_STRING=Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}"]) {
-                        sh '''
-                            set -e
-                            set -x
-                            dotnet ef database update --connection "$CONNECTION_STRING"
-                        '''
+                        script {
+                            try {
+                                def output = sh(
+                                    script: '''
+                                        set -o pipefail
+                                        set -x
+                                        dotnet ef database update --connection "$CONNECTION_STRING" 2>&1 | tee /tmp/ef.log
+                                    ''',
+                                    returnStdout: true
+                                ).trim()
+                                echo "📄 Salida de EF:\n${output}"
+                                echo "✅ Base de datos actualizada exitosamente."
+                            } catch (err) {
+                                echo "❌ Error al actualizar la base de datos"
+                                sh 'cat /tmp/ef.log || true'
+                                error "Falló la ejecución de dotnet ef"
+                            }
+                        }
                     }
                 }
-                echo '✅ Base de datos actualizada exitosamente.'
             }
         }
 

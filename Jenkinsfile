@@ -13,13 +13,6 @@ pipeline {
     }
 
     stages {
-        stage('Clonar Código') {
-            steps {
-                checkout scm
-                echo '✅ Código clonado exitosamente.'
-            }
-        }
-
         stage('Crear Tool Manifest') {
             steps {
                 sh 'dotnet new tool-manifest --force'

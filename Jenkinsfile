@@ -1,10 +1,5 @@
-pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:9.0'
-            args '-u root:root'
-        }
-    }
+
+pipeline {   
 
     environment {
         DB_HOST = 'localhost'
@@ -13,6 +8,26 @@ pipeline {
     }
 
     stages {
+        stage('Preparar Docker') {
+            steps {
+                sh 'docker pull mcr.microsoft.com/dotnet/sdk:9.0'
+                sh 'docker images | grep dotnet || true'
+            }
+        }
+
+        stage('Pipeline en contenedor') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/dotnet/sdk:9.0'
+                    args '-u root:root'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh 'dotnet --info'
+                echo '✅ Ya estamos dentro del contenedor.'
+            }
+        }
 
         stage('Crear Tool Manifest') {
             steps {

@@ -11,9 +11,9 @@ pipeline {
         stage('Configurar .NET 9') {
             steps {
                 sh '''
-                    curl -o install-dotnet.sh https://dot.net/v1/dotnet-install.sh
-                    chmod +x install-dotnet.sh
-                    ./install-dotnet.sh --version 9.0.x
+                    wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+                    chmod +x dotnet-install.sh
+                    ./dotnet-install.sh --channel 9.0
                 '''
             }
         }

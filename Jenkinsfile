@@ -4,17 +4,10 @@ pipeline {
     environment {
         DOTNET_ROOT = "${HOME}/.dotnet"
         PATH = "${HOME}/.dotnet:${HOME}/.dotnet/tools:${env.PATH}"
+        DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "1"
     }
 
     stages {
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y libicu-dev
-                '''
-            }
-        }
 
         stage('Install .NET') {
             steps {

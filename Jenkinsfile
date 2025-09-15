@@ -12,7 +12,7 @@ pipeline {
                 sh '''
                     curl -sSL -o install-dotnet.sh https://dot.net/v1/dotnet-install.sh
                     chmod +x install-dotnet.sh
-                    ./install-dotnet.sh --version 9.0.x --install-dir $DOTNET_ROOT
+                    ./install-dotnet.sh --channel 9.0 --install-dir $DOTNET_ROOT
                 '''
             }
         }

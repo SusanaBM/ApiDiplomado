@@ -7,6 +7,15 @@ pipeline {
     }
 
     stages {
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    apt-get update
+                    apt-get install -y libicu-dev
+                '''
+            }
+        }
+
         stage('Install .NET') {
             steps {
                 sh '''

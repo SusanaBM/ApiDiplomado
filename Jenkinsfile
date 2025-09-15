@@ -54,7 +54,11 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
                     withEnv(["CONNECTION_STRING=Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}"]) {
-                        sh 'dotnet ef database update --connection "$CONNECTION_STRING"'
+                        sh '''
+                            set -e
+                            set -x
+                            dotnet ef database update --connection "$CONNECTION_STRING"
+                        '''
                     }
                 }
                 echo '✅ Base de datos actualizada exitosamente.'

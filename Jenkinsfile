@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    options {
-        ansiColor('xterm')
-        timestamps()
-    }
-
     environment {
         DB_HOST = 'localhost'
         DB_PORT = '5432'

@@ -21,13 +21,6 @@ pipeline {
             }
         }
 
-        stage('Preparar Docker') {
-            steps {
-                sh 'docker pull mcr.microsoft.com/dotnet/sdk:9.0'
-                sh 'docker images | grep dotnet || true'
-            }
-        }
-
         stage('Crear Tool Manifest') {
             steps {
                 sh 'dotnet new tool-manifest --force'

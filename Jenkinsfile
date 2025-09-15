@@ -1,5 +1,10 @@
+pipeline {
+    agent any
 
-pipeline {   
+    options {
+        ansiColor('xterm')
+        timestamps()
+    }
 
     environment {
         DB_HOST = 'localhost'
@@ -10,12 +15,13 @@ pipeline {
     stages {
         stage('Preparar Docker') {
             steps {
+                sh 'echo "🔄 Descargando imagen de .NET 9..."'
                 sh 'docker pull mcr.microsoft.com/dotnet/sdk:9.0'
                 sh 'docker images | grep dotnet || true'
             }
         }
 
-        stage('Pipeline en contenedor') {
+        stage('Pipeline en contenedor .NET 9') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/dotnet/sdk:9.0'
@@ -23,64 +29,62 @@ pipeline {
                     reuseNode true
                 }
             }
-            steps {
-                sh 'dotnet --info'
-                echo '✅ Ya estamos dentro del contenedor.'
-            }
-        }
 
-        stage('Crear Tool Manifest') {
-            steps {
-                sh 'dotnet new tool-manifest --force'
-                echo '✅ Tool manifest creado exitosamente.'
-            }
-        }
-
-        stage('Instalar EF Core Tools') {
-            steps {
-                sh 'dotnet tool install dotnet-ef'
-                echo '✅ EF Core Tools instalados exitosamente.'
-            }
-        }
-
-        stage('Restaurar Dependencias') {
-            steps {
-                sh 'dotnet restore'
-                sh 'dotnet tool restore'
-                echo '✅ Dependencias restauradas exitosamente.'
-            }
-        }
-
-        stage('Actualizar Base de Datos') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
-                    withEnv(["CONNECTION_STRING=Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}"]) {
-                        sh 'dotnet ef database update --connection "$CONNECTION_STRING"'
+            stages {
+                stage('Crear Tool Manifest') {
+                    steps {
+                        sh 'dotnet new tool-manifest --force'
+                        echo '✅ Tool manifest creado exitosamente.'
                     }
                 }
-                echo '✅ Base de datos actualizada exitosamente.'
-            }
-        }
 
-        stage('Compilar') {
-            steps {
-                sh 'dotnet build --configuration Release --no-restore'
-                echo '✅ Compilación exitosa.'
-            }
-        }
+                stage('Instalar EF Core Tools') {
+                    steps {
+                        sh 'dotnet tool install dotnet-ef'
+                        echo '✅ EF Core Tools instalados exitosamente.'
+                    }
+                }
 
-        stage('Ejecutar Pruebas') {
-            steps {
-                sh 'dotnet test --configuration Release --no-build --verbosity normal'
-                echo '✅ Pruebas ejecutadas exitosamente.'
-            }
-        }
+                stage('Restaurar Dependencias') {
+                    steps {
+                        sh 'dotnet restore'
+                        sh 'dotnet tool restore'
+                        echo '✅ Dependencias restauradas exitosamente.'
+                    }
+                }
 
-        stage('Publicar Artefactos') {
-            steps {
-                sh 'dotnet publish -c Release -o out'
-                archiveArtifacts artifacts: 'out/**/*', fingerprint: true
-                echo '✅ Artefactos publicados exitosamente.'
+                stage('Actualizar Base de Datos') {
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
+                            withEnv(["CONNECTION_STRING=Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}"]) {
+                                sh 'dotnet ef database update --connection "$CONNECTION_STRING"'
+                            }
+                        }
+                        echo '✅ Base de datos actualizada exitosamente.'
+                    }
+                }
+
+                stage('Compilar') {
+                    steps {
+                        sh 'dotnet build --configuration Release --no-restore'
+                        echo '✅ Compilación exitosa.'
+                    }
+                }
+
+                stage('Ejecutar Pruebas') {
+                    steps {
+                        sh 'dotnet test --configuration Release --no-build --verbosity normal'
+                        echo '✅ Pruebas ejecutadas exitosamente.'
+                    }
+                }
+
+                stage('Publicar Artefactos') {
+                    steps {
+                        sh 'dotnet publish -c Release -o out'
+                        archiveArtifacts artifacts: 'out/**/*', fingerprint: true
+                        echo '✅ Artefactos publicados exitosamente.'
+                    }
+                }
             }
         }
     }

@@ -72,42 +72,33 @@ pipeline {
             }
         }
 
-        stage('Build in ACR') {
+        stage('Login to ACR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                                                 usernameVariable: 'AZ_USER',
+                                                 passwordVariable: 'AZ_PASS')]) {
+                    sh """
+                        echo $AZ_PASS | docker login $REGISTRY -u $AZ_USER --password-stdin
+                    """
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 sh """
-                    az acr build --registry $REGISTRY \
-                                --image $IMAGE_NAME:$IMAGE_TAG .
+                    docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
                 """
             }
         }
 
-        // stage('Login to ACR') {
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'acr-creds',
-        //                                          usernameVariable: 'AZ_USER',
-        //                                          passwordVariable: 'AZ_PASS')]) {
-        //             sh """
-        //                 echo $AZ_PASS | docker login $REGISTRY -u $AZ_USER --password-stdin
-        //             """
-        //         }
-        //     }
-        // }
-
-        // stage('Build Docker Image') {
-        //     steps {
-        //         sh """
-        //             docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
-        //         """
-        //     }
-        // }
-
-        // stage('Push Docker Image') {
-        //     steps {
-        //         sh """
-        //             docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
-        //         """
-        //     }
-        // }
+        stage('Push Docker Image') {
+            steps {
+                sh """
+                    docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+                """
+            }
+        }
         
     }
 

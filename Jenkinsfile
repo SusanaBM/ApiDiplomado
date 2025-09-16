@@ -11,7 +11,13 @@ pipeline {
         IMAGE_TAG = "latest"
     }
 
-    stages {        
+    stages {      
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Install .NET') {
             steps {
                 sh '''

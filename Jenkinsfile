@@ -3,12 +3,12 @@ pipeline {
     agent any
 
     environment {
-        DB_HOST = 'localhost'
-        DB_PORT = '5432'
-        DB_NAME = 'pedidoDb'
         DOTNET_ROOT = "${HOME}/.dotnet"
         PATH = "${HOME}/.dotnet:${HOME}/.dotnet/tools:${env.PATH}"
         DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "1"
+        REGISTRY = "demoapiregistry.azurecr.io"
+        IMAGE_NAME = "demoapi"
+        IMAGE_TAG = "latest"
     }
 
     stages {        
@@ -71,6 +71,35 @@ pipeline {
                 echo '✅ Artefactos publicados exitosamente.'
             }
         }
+
+        stage('Login to ACR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                                                 usernameVariable: 'AZ_USER',
+                                                 passwordVariable: 'AZ_PASS')]) {
+                    sh """
+                        echo $AZ_PASS | docker login $REGISTRY -u $AZ_USER --password-stdin
+                    """
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                    docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+                """
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh """
+                    docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+                """
+            }
+        }
+        
     }
 
     post {

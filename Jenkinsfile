@@ -89,6 +89,15 @@ pipeline {
             }
         }
 
+        stage('Test Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-demo', variable: 'KUBECONFIG')]) {
+                    sh 'kubectl get ns'
+                    sh 'kubectl get pods -n demo-api'
+                }
+            }
+        }
+
         // stage('Login to ACR') {
         //     steps {
         //         withCredentials([usernamePassword(credentialsId: 'acr-creds',

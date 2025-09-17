@@ -13,11 +13,11 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // ====== MIGRATE DATABASE ======
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();  // Aplica migraciones pendientes
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//     db.Database.Migrate();  // Aplica migraciones pendientes
+// }
 // =============================
 
 if (app.Environment.IsDevelopment())

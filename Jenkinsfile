@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -84,7 +83,7 @@ pipeline {
 
         stage('Publicar Artefactos') {
             steps {
-                sh 'dotnet publish -c Release -o out'
+                sh 'dotnet publish DemoApi.csproj -c Release -o out'
                 archiveArtifacts artifacts: 'out/**/*', fingerprint: true
                 echo '✅ Artefactos publicados exitosamente.'
             }

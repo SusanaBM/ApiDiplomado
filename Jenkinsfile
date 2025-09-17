@@ -121,7 +121,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh """
-                    docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+                    docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG --target final .
                 """
             }
         }

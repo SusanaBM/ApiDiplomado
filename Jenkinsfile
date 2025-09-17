@@ -165,7 +165,7 @@ pipeline {
                     sh '''
                     # Ejecutar migraciones desde un pod temporal en el cluster
                     kubectl run ef-migrate -i -n $NAMESPACE \
-                      --image=$REGISTRY/$IMAGE_NAME:migration --restart=Never --command -- \
+                      --image=$REGISTRY/$IMAGE_NAME:migration --restart=Never --env="ConnectionStrings__DefaultConnection=Host=demo-postgres-postgresql;Port=5432;Database=pedidosdb;Username=demo_user;Password=demo_pass;Ssl Mode=Disable;Trust Server Certificate=true;" --command -- \
                       /bin/bash -c "dotnet tool restore && dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj"
                     '''
                 }

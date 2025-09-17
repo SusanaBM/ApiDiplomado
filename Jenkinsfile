@@ -126,10 +126,26 @@ pipeline {
             }
         }
 
+        stage('Build Migration Docker Image') {
+            steps {
+                sh """
+                    docker build -f Dockerfile -t $REGISTRY/$IMAGE_NAME:migration --target migration .
+                """
+            }
+        }
+
         stage('Push Docker Image') {
             steps {
                 sh """
                     docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+                """
+            }
+        }
+
+        stage('Push Migration Docker Image') {
+            steps {
+                sh """
+                    docker push $REGISTRY/$IMAGE_NAME:migration
                 """
             }
         }
@@ -149,7 +165,7 @@ pipeline {
                     sh '''
                     # Ejecutar migraciones desde un pod temporal en el cluster
                     kubectl run ef-migrate -i -n $NAMESPACE \
-                      --image=$REGISTRY/$IMAGE_NAME --restart=Never --command -- \
+                      --image=$REGISTRY/$IMAGE_NAME:migration --restart=Never --command -- \
                       dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj
                     '''
                 }

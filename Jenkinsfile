@@ -90,17 +90,17 @@ pipeline {
             }
         }        
 
-        // stage('Login to ACR') {
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'acr-creds',
-        //                                          usernameVariable: 'AZ_USER',
-        //                                          passwordVariable: 'AZ_PASS')]) {
-        //             sh """
-        //                 echo $AZ_PASS | docker login $REGISTRY -u $AZ_USER --password-stdin
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Login to ACR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                                                 usernameVariable: 'AZ_USER',
+                                                 passwordVariable: 'AZ_PASS')]) {
+                    sh """
+                        docker login $REGISTRY -u $AZ_USER --password-stdin
+                    """
+                }
+            }
+        }
 
         // stage('Actualizar Base de Datos') {
         //     steps {

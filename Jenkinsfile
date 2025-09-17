@@ -96,7 +96,7 @@ pipeline {
                                                  usernameVariable: 'AZ_USER',
                                                  passwordVariable: 'AZ_PASS')]) {
                     sh """
-                        docker login $REGISTRY -u $AZ_USER --password-stdin
+                        echo \$AZ_PASS | docker login $REGISTRY -u \$AZ_USER --password-stdin
                     """
                 }
             }

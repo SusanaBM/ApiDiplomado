@@ -1,7 +1,7 @@
 # Utilizar imagen Base .NET 9.0 SDK para permitir migraciones EF
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 8080
 
 # Instalar EF Core Tools globalmente en la imagen base
 RUN dotnet tool install --global dotnet-ef

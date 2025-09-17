@@ -166,7 +166,7 @@ pipeline {
                     # Ejecutar migraciones desde un pod temporal en el cluster
                     kubectl run ef-migrate -i -n $NAMESPACE \
                       --image=$REGISTRY/$IMAGE_NAME:migration --restart=Never --command -- \
-                      dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj
+                      /bin/bash -c "dotnet tool restore && dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj"
                     '''
                 }
             }

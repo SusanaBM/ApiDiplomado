@@ -134,19 +134,6 @@ pipeline {
             }
         }
 
-        stage('Run EF Migrations in Cluster') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig-demo', variable: 'KUBECONFIG')]) {
-                    sh '''
-                    # Ejecutar migraciones desde un pod temporal en el cluster
-                    kubectl run ef-migrate --rm -i -n $NAMESPACE \
-                      --image=$REGISTRY/$IMAGE_NAME --restart=Never --command -- \
-                      dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj
-                    '''
-                }
-            }
-        }
-
         stage('Test Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-demo', variable: 'KUBECONFIG')]) {
@@ -155,7 +142,19 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('Run EF Migrations in Cluster') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-demo', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    # Ejecutar migraciones desde un pod temporal en el cluster
+                    kubectl run ef-migrate -i -n $NAMESPACE \
+                      --image=$REGISTRY/$IMAGE_NAME --restart=Never --command -- \
+                      dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj
+                    '''
+                }
+            }
+        }
     }
 
     post {

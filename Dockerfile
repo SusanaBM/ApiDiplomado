@@ -1,4 +1,4 @@
-# Utilizar imagen Base .NET 9.0 SDK para permitir migraciones
+# Utilizar imagen Base .NET 9.0 SDK para permitir migraciones EF
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS base
 WORKDIR /app
 EXPOSE 80

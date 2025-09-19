@@ -144,9 +144,7 @@ pipeline {
                     sh """
                         git clone https://${GITOPS_REPO}
 
-                        ls -la
-
-                        cd demo-api-helm
+                        ls -la                        
                     """
                 }
                
@@ -156,6 +154,13 @@ pipeline {
         stage('Package Helm Chart') {
             steps {
                 script {
+
+                    sh """
+                      cd demo-api-helm
+
+                      ls -la
+                    """
+
                     // Leer versión del Chart.yaml
                     VERSION = sh(
                         script: "grep '^version:' ${CHART_DIR}/Chart.yaml | awk '{print \$2}'",

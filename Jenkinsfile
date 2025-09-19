@@ -181,7 +181,7 @@ pipeline {
 
                         ls -la
 
-                        sed -i 's/targetRevision:.*/targetRevision: ${VERSION}/' demo-api.yaml
+                        sed -i 's/targetRevision:.*/targetRevision: ${CHART_VERSION}/' demo-api.yaml
 
                         git config user.email "action@github.com"
                         git config user.name "Github Action"

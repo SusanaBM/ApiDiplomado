@@ -20,7 +20,7 @@ pipeline {
         CHART_PKG_URL = 'https://susanabm.github.io/demo-api-helm/'
         CHART_VERSION    = '' // se calculará dinámicamente
         GITOPS_REPO = 'git@github.com:SusanaBM/demo-api-helm.git'
-        GTIOPS_DIR = 'argocd-apps'
+        GITOPS_DIR = 'argocd-apps'
     }
 
     stages {      

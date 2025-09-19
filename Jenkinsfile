@@ -162,6 +162,7 @@ pipeline {
                     """
 
                     sh """
+                      cd demo-api-helm
                       helm lint ${CHART_DIR}
                       helm dependency update ${CHART_DIR}
                       helm package ${CHART_DIR} -d ${DOCS_DIR}

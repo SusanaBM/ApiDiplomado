@@ -19,7 +19,7 @@ pipeline {
         CHART_NAME = 'demo-chart'
         CHART_PKG_URL = 'https://susanabm.github.io/demo-api-helm/'
         CHART_VERSION    = '' // se calculará dinámicamente
-        GITOPS_REPO = 'git@github.com:SusanaBM/demo-api-helm.git'
+        GITOPS_REPO = 'https://github.com/SusanaBM/demo-api-helm.git'
         GITOPS_DIR = 'argocd-apps'
     }
 
@@ -136,13 +136,13 @@ pipeline {
 
         stage('Clone Chart-GitOps repo') {
             steps {
-                dir("${GITOPS_DIR}") {
+                dir("demo-api-helm") {
                     deleteDir()
                 }
                 withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     
                     sh """
-                        git clone https://${GITOPS_REPO} .
+                        git clone https://${GITOPS_REPO}
                     """
                 }
                

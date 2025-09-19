@@ -136,10 +136,11 @@ pipeline {
 
         stage('Clone Chart-GitOps repo') {
             steps {
+                dir("${GITOPS_DIR}") {
+                    deleteDir()
+                }
                 withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
-                    dir(${GITOPS_DIR}) {
-                        deleteDir()
-                    }
+                    
                     sh """
                         git clone https://${GITOPS_REPO} .
                     """

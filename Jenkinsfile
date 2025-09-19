@@ -182,7 +182,7 @@ pipeline {
 
                         ls -la
 
-                        sed -i 's/targetRevision:.*/targetRevision: ${VERSION}/' demo-api.yaml
+                        sed -i 's/targetRevision:.*/targetRevision: ${VERSION}/' ${PRINCIPAL_DIR}/${GITOPS_DIR}/demo-api.yaml
 
                         git config user.email "action@github.com"
                         git config user.name "Github Action"

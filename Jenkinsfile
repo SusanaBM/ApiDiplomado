@@ -19,7 +19,7 @@ pipeline {
         DOCS_DIR   = 'docs'
         CHART_NAME = 'demo-chart'
         CHART_PKG_URL = 'https://susanabm.github.io/demo-api-helm/'
-        CHART_VERSION    = '' // se calculará dinámicamente
+        VERSION    = '' // se calculará dinámicamente
         GITOPS_REPO = 'github.com/SusanaBM/demo-api-helm.git'
         GITOPS_DIR = 'argocd-apps'
     }
@@ -156,11 +156,12 @@ pipeline {
             steps {
                 script {
                     // Obtener versión desde Chart.yaml
-                    CHART_VERSION = sh(
+                    VERSION = sh(
                         script: "grep '^version:' ${PRINCIPAL_DIR}/${CHART_DIR}/Chart.yaml | awk '{print \$2}'",
                         returnStdout: true
                     ).trim()
-
+                    
+                    echo "Chart version: ${VERSION}"
                     sh """
                       cd ${PRINCIPAL_DIR}
                       helm lint ${CHART_DIR}
@@ -181,7 +182,7 @@ pipeline {
 
                         ls -la
 
-                        sed -i 's/targetRevision:.*/targetRevision: ${CHART_VERSION}/' demo-api.yaml
+                        sed -i 's/targetRevision:.*/targetRevision: ${VERSION}/' demo-api.yaml
 
                         git config user.email "action@github.com"
                         git config user.name "Github Action"

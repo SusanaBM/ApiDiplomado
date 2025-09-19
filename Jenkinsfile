@@ -157,6 +157,7 @@ pipeline {
 
                     sh """
                       cd demo-api-helm
+                      cd ${CHART_DIR}
 
                       ls -la
                     """

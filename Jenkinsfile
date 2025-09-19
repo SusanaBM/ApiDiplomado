@@ -145,6 +145,8 @@ pipeline {
                         git clone https://${GITOPS_REPO}
 
                         ls -la
+
+                        cd ${GITOPS_DIR}
                     """
                 }
                

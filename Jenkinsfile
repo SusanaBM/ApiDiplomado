@@ -161,12 +161,6 @@ pipeline {
                       ls -la
                     """
 
-                    // Leer versión del Chart.yaml
-                    VERSION = sh(
-                        script: "grep '^version:' ${CHART_DIR}/Chart.yaml | awk '{print \$2}'",
-                        returnStdout: true
-                    ).trim()
-
                     sh """
                       helm lint ${CHART_DIR}
                       helm dependency update ${CHART_DIR}

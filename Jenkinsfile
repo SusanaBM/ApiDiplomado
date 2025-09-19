@@ -92,7 +92,7 @@ pipeline {
 
         stage('Login to ACR') {
             steps {
-                withCredentials([usernamePassword(credentialsId: ${ACR_CREDS}, ,
+                withCredentials([usernamePassword(credentialsId: "${ACR_CREDS}",
                                                  usernameVariable: 'AZ_USER',
                                                  passwordVariable: 'AZ_PASS')]) {
                     sh """
@@ -136,7 +136,7 @@ pipeline {
 
         stage('Clone Chart-GitOps repo') {
             steps {
-                withCredentials([usernamePassword(credentialsId: ${GITHUB_CREDS}, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     dir("${GITOPS_DIR}") {
                         deleteDir()
                     }
@@ -169,7 +169,7 @@ pipeline {
 
         stage('Update GitOps repo') {
             steps {
-                withCredentials([usernamePassword(credentialsId: ${GITHUB_CREDS}, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh """
 
                         cd ${GITOPS_DIR}

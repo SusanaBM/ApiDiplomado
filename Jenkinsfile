@@ -10,6 +10,7 @@ pipeline {
         IMAGE_TAG = GIT_COMMIT.take(7)
         NAMESPACE = "demo-api"
         CHART_REPO = "https://susanabm.github.io/demo-api-helm/"
+        PRINCIPAL_DIR = "demo-api-helm"
         K8SREPO = "github.com/3sneider/k8sRepository.git"
         GITHUB_CREDS = "github-creds-su"
         ACR_CREDS = "acr-creds"
@@ -154,15 +155,14 @@ pipeline {
         stage('Package Helm Chart') {
             steps {
                 script {
+                    // Obtener versión desde Chart.yaml
+                    CHART_VERSION = sh(
+                        script: "grep '^version:' ${PRINCIPAL_DIR}/${CHART_DIR}/Chart.yaml | awk '{print \$2}'",
+                        returnStdout: true
+                    ).trim()
 
                     sh """
-                      cd demo-api-helm
-
-                      ls -la
-                    """
-
-                    sh """
-                      cd demo-api-helm
+                      cd ${PRINCIPAL_DIR}
                       helm lint ${CHART_DIR}
                       helm dependency update ${CHART_DIR}
                       helm package ${CHART_DIR} -d ${DOCS_DIR}
@@ -177,7 +177,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh """
 
-                        cd ${GITOPS_DIR}
+                        cd ${PRINCIPAL_DIR}
 
                         ls -la
 

@@ -6,9 +6,21 @@ pipeline {
         PATH = "${HOME}/.dotnet:${HOME}/.dotnet/tools:${env.PATH}"
         DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "1"
         REGISTRY = "demoapiregistry.azurecr.io"
-        IMAGE_NAME = "demoapi"
-        IMAGE_TAG = "latest"
+        IMAGE_NAME = "demo-api"
+        IMAGE_TAG = GIT_COMMIT.take(7)
         NAMESPACE = "demo-api"
+        CHART_REPO = "https://susanabm.github.io/demo-api-helm/"
+        K8SREPO = "github.com/3sneider/k8sRepository.git"
+        GITHUB_CREDS = "github-creds-su"
+        ACR_CREDS = "acr-creds"
+
+        CHART_DIR  = 'demo-chart'
+        DOCS_DIR   = 'docs'
+        CHART_NAME = 'demo-chart'
+        CHART_PKG_URL = 'https://susanabm.github.io/demo-api-helm/'
+        CHART_VERSION    = '' // se calculará dinámicamente
+        GITOPS_REPO = 'git@github.com:SusanaBM/demo-api-helm.git'
+        GTIOPS_DIR = 'argocd-apps'
     }
 
     stages {      
@@ -16,19 +28,7 @@ pipeline {
             steps {
                 checkout scm
             }
-        }
-
-        stage('Debug Workspace') {
-            steps {
-                sh '''
-                    pwd
-                    echo "=== Archivos en el workspace ==="
-                    ls -la
-                    echo "=== Archivos en .docker (si existe) ==="
-                    ls -la .docker || true
-                '''
-            }
-        }
+        }      
 
         stage('Install .NET') {
             steps {
@@ -92,7 +92,7 @@ pipeline {
 
         stage('Login to ACR') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                withCredentials([usernamePassword(credentialsId: ${ACR_CREDS}, ,
                                                  usernameVariable: 'AZ_USER',
                                                  passwordVariable: 'AZ_PASS')]) {
                     sh """
@@ -101,22 +101,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Actualizar Base de Datos') {
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'db-credentials',
-        //                                         usernameVariable: 'DB_USER',
-        //                                         passwordVariable: 'DB_PASSWORD')]) {
-        //             withEnv(["CONNECTION_STRING=Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=$DB_USER;Password=$DB_PASSWORD"]) {
-        //                 sh """
-        //                     export ConnectionStrings__DefaultConnection="$CONNECTION_STRING"
-        //                     dotnet ef database update --project DemoApi.csproj
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
-
 
         stage('Build Docker Image') {
             steps {
@@ -150,25 +134,58 @@ pipeline {
             }
         }
 
-        stage('Test Kubernetes') {
+        stage('Clone Chart-GitOps repo') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-demo', variable: 'KUBECONFIG')]) {
-                    sh 'kubectl get ns'
-                    sh 'kubectl get pods -n demo-api'
+                withCredentials([usernamePassword(credentialsId: ${GITHUB_CREDS}, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    dir("${GITOPS_DIR}") {
+                        deleteDir()
+                    }
+                    sh """
+                        git clone https://${GITOPS_REPO} .
+                    """
+                }
+               
+            }
+        }
+
+        stage('Package Helm Chart') {
+            steps {
+                script {
+                    // Leer versión del Chart.yaml
+                    VERSION = sh(
+                        script: "grep '^version:' ${CHART_DIR}/Chart.yaml | awk '{print \$2}'",
+                        returnStdout: true
+                    ).trim()
+
+                    sh """
+                      helm lint ${CHART_DIR}
+                      helm dependency update ${CHART_DIR}
+                      helm package ${CHART_DIR} -d ${DOCS_DIR}
+                      helm repo index ${DOCS_DIR} --url ${CHART_PKG_URL} --merge ${DOCS_DIR}/index.yaml || true
+                    """
                 }
             }
         }
 
-        stage('Run EF Migrations in Cluster') {
+        stage('Update GitOps repo') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-demo', variable: 'KUBECONFIG')]) {
-                    sh '''
-                    # Ejecutar migraciones desde un pod temporal en el cluster
-                    kubectl run ef-migrate --rm -i -n $NAMESPACE \
-                      --image=$REGISTRY/$IMAGE_NAME:migration --restart=Never --env="ConnectionStrings__DefaultConnection=Host=demo-postgres-postgresql;Port=5432;Database=pedidosdb;Username=demo_user;Password=demo_pass;Ssl Mode=Disable;Trust Server Certificate=true;" --command -- \
-                      /bin/bash -c "dotnet tool restore && dotnet ef database update --project DemoApi.csproj --startup-project DemoApi.csproj"
-                    '''
-                }
+                withCredentials([usernamePassword(credentialsId: ${GITHUB_CREDS}, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh """
+
+                        cd ${GITOPS_DIR}
+
+                        ls -la
+
+                        sed -i 's/targetRevision:.*/targetRevision: ${VERSION}/' demo-api.yaml
+
+                        git config user.email "action@github.com"
+                        git config user.name "Github Action"
+                        git add ${DOCS_DIR} ${GITOPS_DIR}/demo-api.yaml
+                        git commit -m "Release ${CHART_NAME} version ${VERSION}" || echo "No hay cambios para commitear"
+                        git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@${GITOPS_REPO}
+                        git push origin main
+                    """
+                }               
             }
         }
     }

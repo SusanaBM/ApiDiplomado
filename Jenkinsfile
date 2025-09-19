@@ -146,7 +146,7 @@ pipeline {
 
                         ls -la
 
-                        cd ${GITOPS_DIR}
+                        cd demo-api-helm
                     """
                 }
                

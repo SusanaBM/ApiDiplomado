@@ -143,6 +143,8 @@ pipeline {
                     
                     sh """
                         git clone https://${GITOPS_REPO}
+
+                        ls -la
                     """
                 }
                
